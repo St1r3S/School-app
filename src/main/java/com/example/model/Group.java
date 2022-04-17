@@ -1,7 +1,11 @@
 package com.example.model;
 
-import java.util.Objects;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+@ToString
 public class Group extends LongEntity {
     public static final String GROUP_ID = "group_id";
     public static final String GROUP_NAME = "group_name";
@@ -17,25 +21,4 @@ public class Group extends LongEntity {
         this(null, name);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        Group group = (Group) o;
-        return Objects.equals(name, group.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), name);
-    }
 }

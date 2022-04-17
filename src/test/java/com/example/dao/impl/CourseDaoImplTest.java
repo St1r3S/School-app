@@ -1,15 +1,14 @@
 package com.example.dao.impl;
 
+import com.example.dao.CourseDao;
 import com.example.dao.DaoTestBase;
 import com.example.dao.EmbeddedPostgresSimpleDatasourceProvider;
-import com.example.dao.GroupDao;
-import com.example.model.Group;
+import com.example.model.Course;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.UUID;
 
 import static com.example.utils.SqlUtils.executeSqlScriptFile;
@@ -17,11 +16,11 @@ import static com.example.utils.TransactionUtils.transaction;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class GroupDaoImplTest extends DaoTestBase {
+public class CourseDaoImplTest extends DaoTestBase {
 
-    GroupDao dao = new GroupDaoImpl();
+    CourseDao dao = new CourseDaoImpl();
 
-    public GroupDaoImplTest() throws IOException {
+    public CourseDaoImplTest() throws IOException {
         super(new EmbeddedPostgresSimpleDatasourceProvider());
     }
 
@@ -29,12 +28,12 @@ public class GroupDaoImplTest extends DaoTestBase {
     void setUp() throws SQLException {
         executeSqlScriptFile(datasource, "sql/drop_schema.sql");
         executeSqlScriptFile(datasource, "sql/init_schema.sql");
-        executeSqlScriptFile(datasource, "test_sql/group_sample.sql");
+        executeSqlScriptFile(datasource, "test_sql/course_sample.sql");
     }
 
     @Test
-    void shouldCreateGroup() throws SQLException {
-        Group initial = new Group(UUID.randomUUID().toString());
+    void shouldCreateCourse() throws SQLException {
+        Course initial = new Course(UUID.randomUUID().toString(), UUID.randomUUID().toString());
 
         transaction(datasource, connection -> dao.save(connection, initial));
 
@@ -48,17 +47,17 @@ public class GroupDaoImplTest extends DaoTestBase {
     }
 
     @Test
-    void shouldUpdateGroup() throws SQLException {
+    void shouldUpdateCourse() throws SQLException {
         String updatedName = "i updated you! 42";
         transaction(datasource, connection -> {
-            Group initial = dao.findById(connection, 30000L).orElseThrow();
+            Course initial = dao.findById(connection, 30000L).orElseThrow();
             assertNotEquals(updatedName, initial.getName());
-            Group toSave = new Group(initial.getId(), updatedName);
+            Course toSave = new Course(initial.getId(), updatedName, initial.getDescription());
             dao.save(connection, toSave);
         });
 
         transaction(datasource, connection -> {
-            Group updated = dao.findById(connection, 30000L).orElseThrow();
+            Course updated = dao.findById(connection, 30000L).orElseThrow();
             assertEquals(30000, updated.getId());
             assertEquals(updatedName, updated.getName());
         });
@@ -67,8 +66,8 @@ public class GroupDaoImplTest extends DaoTestBase {
     @Test
     void shouldFindById() throws SQLException {
         transaction(datasource, (connection -> {
-            Group actual = dao.findById(connection, 10000L).orElseThrow();
-            Group expected = new Group(10000L, "find me!");
+            Course actual = dao.findById(connection, 10000L).orElseThrow();
+            Course expected = new Course(10000L, "find me!", "for find");
             assertEquals(expected, actual);
         }));
     }
@@ -76,7 +75,7 @@ public class GroupDaoImplTest extends DaoTestBase {
     @Test
     void shouldFindByName() throws SQLException {
         transaction(datasource, (connection -> {
-            Group actual = dao.findByName(connection, "find me!").orElseThrow();
+            Course actual = dao.findByName(connection, "find me!").orElseThrow();
             assertEquals(10000, actual.getId());
         }));
     }
@@ -98,14 +97,6 @@ public class GroupDaoImplTest extends DaoTestBase {
     void shouldNotDelete() throws SQLException {
         transaction(datasource, (connection ->
                 assertThrows(SQLException.class, () -> dao.deleteById(connection, 21000L))));
-    }
-
-    @Test
-    void shouldFindGroupsByStudentsAmount() throws SQLException {
-        transaction(datasource, (connection -> {
-            List<Group> actual = dao.findAllByStudentsAmount(connection, 1);
-            assertEquals(10000, actual.get(0).getId());
-        }));
     }
 
 }
