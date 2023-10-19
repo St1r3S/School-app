@@ -1,2 +1,3 @@
-# task_7
+# School app
 
+Java app for mastering JDBC.
